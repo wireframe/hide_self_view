@@ -1,10 +1,17 @@
-function execute() {
-    // there are too many "more options" buttons, so we will not use this
-    // clickMoreOptionsButton();
-    clickMinimizeButton();
+var isMinimized = false;
+function hideSelfView() {
+    if (isMinimized) {
+        console.log("Self view is already minimized.");
+        return;
+    }
+    clickMoreOptionsButton();
 }
 
-// Click the "More options" button to show the options menu
+// Click the  "More options" button for the relevant element to show the options menu
+// there are multiple "More options" buttons in the DOM, we need to find the one that is connected
+// to the self view.
+// When the viewport is in "mobile" view, there is an additional "more options" button for video controls.
+// 
 // DOM for "More options" button
 //  <button class="VfPpkd-Bz112c-LgbsSe yHy1rc eT1oJ tWDL4c nn1vQb s4hFTd" jscontroller="soHxf" jsaction="click:cOuCgd; mousedown:UX7yZ; mouseup:lbsD7e; mouseenter:tfO1Yc; mouseleave:JywGue; touchstart:p6p2H; touchmove:FwuNnf; touchend:yfqBxc; touchcancel:JMtRjd; focus:AHmuwe; blur:O22p3e; contextmenu:mg9Pef;mlnRJb:fLiPzd;" data-disable-idom="true" aria-label="More options" data-tooltip-enabled="true" data-tooltip-id="tt-c616" data-tooltip-x-position="3" data-tooltip-y-position="3" role="button" aria-expanded="false" aria-haspopup="menu" jslog="178046; track:click" style="--mdc-ripple-fg-size: 26px; --mdc-ripple-fg-scale: 1.6923076923076923; --mdc-ripple-left: 9px; --mdc-ripple-top: 9px;">
 //    <div jsname="s3Eaab" class="VfPpkd-Bz112c-Jh9lGc"></div>
@@ -13,13 +20,26 @@ function execute() {
 //  </button>
 function clickMoreOptionsButton() {
     console.log("Running clickMoreOptionsButton.");
-    const moreOptionsButton = document.querySelector('[aria-label="More options"]');
+    // find the last "more options" button in the dom
+    const elements = document.querySelectorAll('[aria-label="More options"]');
+    console.log("number of buttons found: " + elements.length);
+    if (elements.length < 2) {
+        console.log("Unable to minimize self view.");
+        return;
+    }
+    // when in mobile view, there is an additional "more options" button for video controls
+    var offset = window.innerWidth < 650 ? 3 : 2;
+    const moreOptionsButton = elements[elements.length - offset];
 
     // Check if the button is found
     if (moreOptionsButton) {
         // Simulate a click on the "More options" button
         moreOptionsButton.click();
         console.log("More options button clicked.");
+
+        requestAnimationFrame(() => {
+            clickMinimizeButton();
+        });
     } else {
         console.log("More options button not found.");
     }
@@ -40,14 +60,18 @@ function clickMinimizeButton() {
     // Find the minimize button by its aria-label
     const minimizeButton = document.querySelector('[aria-label="Minimize"]');
   
-    // Check if the button is found
-    if (minimizeButton) {
-      // Simulate a click on the minimize button
-      minimizeButton.click();
-      console.log("Minimize button clicked.");
-    } else {
-      console.log("Minimize button not found.");
+    if (!minimizeButton) {
+        console.log("Minimize button not found.");
+        return;
     }
+    // Simulate a click on the minimize button
+    minimizeButton.click();
+    console.log("Minimize button clicked.");
+    isMinimized = true;
+
+    setTimeout(() => {
+        dismissDialog();
+    }, 1000);
 }
 
 // dismiss the informational dialog 
@@ -69,15 +93,24 @@ function clickMinimizeButton() {
 //     </span>    
 // </div>
 // dialog contents: "You are still sending your video to others in the meeting"
+function dismissDialog() {
+    console.log("Running dismissDialog.");
+    const div = document.evaluate("//div[text()='You are still sending your video to others in the meeting']", document, null, XPathResult.ANY_TYPE, null).iterateNext();
+    if (!div) {
+        console.log("Helper tip dialog not found.");
+        return;
+    }
+    // Simulate a click on the close button to dismiss the dialog
+    div.parentElement.querySelector('button').click();
+}
 
-
-// Run the clickMinimizeButton function when the page loads
-window.addEventListener('load', execute);
+// Run the hideSelfView function when the page loads
+window.addEventListener('load', hideSelfView);
 
 // Use MutationObserver to observe for changes in the DOM and try clicking the minimize button again if changes occur
 const observer = new MutationObserver(() => {
-    console.log("DOM changed, re-running execute again.");
-    execute();
+    console.log("DOM changed, re-running hideSelfView again.");
+    hideSelfView();
 });
   
 observer.observe(document.body, { childList: true, subtree: true });
