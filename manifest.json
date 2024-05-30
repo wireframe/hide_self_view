@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Self-View Hider (Google Meet, Google Hangout)",
   "version": "1.0",
-  "description": "Hides the self-view in Google Meet/Hangout video calls.",
+  "description": "Hides your self-view in Google Meet/Hangout video calls.",
   "permissions": [
     "tabs",
     "<all_urls>"
@@ -22,6 +22,11 @@
   },
   "browser_action": {
     "default_icon": "icons/icon-48.png",
-    "default_title": "Toggle Self-View"
+    "default_title": "Hide Self-View"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{ab344a96-d880-4826-aa3c-86f45a7e342c}"
+    }
   }
 }
