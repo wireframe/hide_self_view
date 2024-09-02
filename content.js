@@ -107,6 +107,11 @@ function dismissDialog() {
 // Run the hideSelfView function when the page loads
 window.addEventListener('load', hideSelfView);
 
+// Reset isMinimized when the user navigates away from the current tab
+window.addEventListener('beforeunload', function() {
+    isMinimized = false;
+});
+
 // Use MutationObserver to observe for changes in the DOM and try clicking the minimize button again if changes occur
 const observer = new MutationObserver(() => {
     console.log("DOM changed, re-running hideSelfView again.");
