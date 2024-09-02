@@ -22,27 +22,24 @@ function clickMoreOptionsButton() {
     console.log("Running clickMoreOptionsButton.");
     // find the last "more options" button in the dom
     const elements = document.querySelectorAll('[aria-label="More options"]');
-    console.log("number of buttons found: " + elements.length);
-    if (elements.length < 2) {
-        console.log("Unable to minimize self view.");
-        return;
-    }
+    console.log("number of More options buttons found: " + elements.length);
     // when in mobile view, there is an additional "more options" button for video controls
     var offset = window.innerWidth < 650 ? 3 : 2;
-    const moreOptionsButton = elements[elements.length - offset];
-
-    // Check if the button is found
-    if (moreOptionsButton) {
-        // Simulate a click on the "More options" button
-        moreOptionsButton.click();
-        console.log("More options button clicked.");
-
-        requestAnimationFrame(() => {
-            clickMinimizeButton();
-        });
-    } else {
-        console.log("More options button not found.");
+    if (elements.length < offset) {
+        console.log("Unable to find the self view More options button.");
+        return;
     }
+    const selfViewMoreOptionsButton = elements[elements.length - offset];
+    selfViewMoreOptionsButton.click();
+    console.log("self view More options button clicked.");
+
+    requestAnimationFrame(() => {
+        var minimizeClicked = clickMinimizeButton();
+        if (!minimizeClicked) {
+            console.log("Oops...Wrong options button clicked.");
+            selfViewMoreOptionsButton.click();
+        }
+    });
 }
 
 // Click the "Minimize" button to hide the self view
@@ -62,12 +59,13 @@ function clickMinimizeButton() {
   
     if (!minimizeButton) {
         console.log("Minimize button not found.");
-        return;
+        return false;
     }
     // Simulate a click on the minimize button
     minimizeButton.click();
     console.log("Minimize button clicked.");
     isMinimized = true;
+    return true;
 
     setTimeout(() => {
         dismissDialog();
