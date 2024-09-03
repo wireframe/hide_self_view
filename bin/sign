@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# pass through all arguments to web-ext
+web-ext sign --amo-metadata amo-metadata.json "$@"

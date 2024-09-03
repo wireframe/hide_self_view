@@ -1,0 +1,9 @@
+{
+    "summary": {
+        "en-US": "Hides your self-view in Google Meet/Hangout video calls."
+      },
+    "version": {
+        "license": "MIT"
+    },
+    "categories": ["other"]
+}

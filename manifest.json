@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Self-View Hider (Google Meet, Google Hangout)",
-  "version": "1.0",
+  "version": "1.0.1",
   "description": "Hides your self-view in Google Meet/Hangout video calls.",
   "permissions": [
     "tabs",

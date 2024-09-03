@@ -14,6 +14,6 @@ This extension is a dirty, dirty hack that relies on very specific DOM structure
 ## Build steps
 
 ```bash
-$ web-ext build
-$ web-ext sign
+$ bin/build
+$ bin/sign
 ```
