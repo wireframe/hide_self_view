@@ -39,6 +39,22 @@ function findSelfViewTile(doc, userName) {
   return current;
 }
 
+// Hides the self-view tile by setting display:none on the identified tile element.
+function hideSelfView(doc) {
+  const userName = extractUserName(doc);
+  if (!userName) {
+    console.log('Could not extract user name from page data.');
+    return;
+  }
+  const tile = findSelfViewTile(doc, userName);
+  if (!tile) {
+    console.log('Self-view tile not found.');
+    return;
+  }
+  tile.style.display = 'none';
+  console.log('Self-view hidden for: ' + userName);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { extractUserName, findSelfViewTile };
+  module.exports = { extractUserName, findSelfViewTile, hideSelfView };
 }

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { JSDOM } from 'jsdom';
 import { resolve } from 'path';
-import { extractUserName, findSelfViewTile } from '../content.js';
+import { extractUserName, findSelfViewTile, hideSelfView } from '../content.js';
 
 const FIXTURE_PATH = resolve(__dirname, 'fixtures/google-meet-call.html');
 const fixtureHtml = readFileSync(FIXTURE_PATH, 'utf-8');
@@ -56,5 +56,53 @@ describe('findSelfViewTile', () => {
     const dom = new JSDOM('<!DOCTYPE html><html><body><button aria-label="More options for Someone Else"></button></body></html>');
     const tile = findSelfViewTile(dom.window.document, 'Nonexistent User');
     expect(tile).toBeNull();
+  });
+});
+
+describe('hideSelfView', () => {
+  it('hides the self-view tile', () => {
+    const doc = loadFixture();
+    hideSelfView(doc);
+    const selfButton = doc.querySelector('[aria-label="More options for Test User"]');
+    let el = selfButton;
+    let hidden = false;
+    while (el) {
+      if (el.style && el.style.display === 'none') { hidden = true; break; }
+      el = el.parentElement;
+    }
+    expect(hidden).toBe(true);
+  });
+
+  it('does not hide other participant tiles', () => {
+    const doc = loadFixture();
+    hideSelfView(doc);
+    const aliceButton = doc.querySelector('[aria-label="More options for Alice Smith"]');
+    let el = aliceButton;
+    let hidden = false;
+    while (el) {
+      if (el.style && el.style.display === 'none') { hidden = true; break; }
+      el = el.parentElement;
+    }
+    expect(hidden).toBe(false);
+  });
+
+  it('is idempotent — multiple calls do not cause errors', () => {
+    const doc = loadFixture();
+    hideSelfView(doc);
+    hideSelfView(doc);
+    hideSelfView(doc);
+    const selfButton = doc.querySelector('[aria-label="More options for Test User"]');
+    let el = selfButton;
+    let hidden = false;
+    while (el) {
+      if (el.style && el.style.display === 'none') { hidden = true; break; }
+      el = el.parentElement;
+    }
+    expect(hidden).toBe(true);
+  });
+
+  it('does nothing when user name cannot be extracted', () => {
+    const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+    expect(() => hideSelfView(dom.window.document)).not.toThrow();
   });
 });
