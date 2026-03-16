@@ -85,10 +85,16 @@ if (typeof window !== 'undefined' && typeof module === 'undefined') {
 
   var observer = new MutationObserver(debouncedHide);
 
-  window.addEventListener('load', function() {
+  function start() {
     hideSelfView(document);
     observer.observe(document.body, { childList: true, subtree: true });
-  });
+  }
+
+  if (document.body) {
+    start();
+  } else {
+    document.addEventListener('DOMContentLoaded', start);
+  }
 
   window.addEventListener('beforeunload', function() {
     observer.disconnect();
