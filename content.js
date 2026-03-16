@@ -44,26 +44,16 @@ function findSelfViewTile(doc, userName) {
     }
     current = parent;
   }
-  if (!tile) {
-    return null;
+  return tile || null;
+}
+
+// Walks up a fixed number of parent levels from a starting element.
+function walkUpParents(element, levels) {
+  var current = element;
+  for (var i = 0; i < levels && current.parentElement; i++) {
+    current = current.parentElement;
   }
-  // Walk up to include the outermost positioning/sizing wrapper.
-  // The self-view tile is wrapped in containers with inline width/height/inset
-  // styles, possibly with unstyled wrappers in between. Find the outermost
-  // layout ancestor that doesn't contain other participants.
-  var outermost = tile;
-  var candidate = tile;
-  while (candidate.parentElement) {
-    candidate = candidate.parentElement;
-    if (candidate.querySelector('[data-participant-id]')) {
-      break;
-    }
-    var inlineStyle = candidate.getAttribute('style') || '';
-    if (inlineStyle.match(/width|height|inset/)) {
-      outermost = candidate;
-    }
-  }
-  return outermost;
+  return current;
 }
 
 // Hides the self-view tile by setting display:none on the identified tile element.
@@ -104,7 +94,7 @@ if (typeof window !== 'undefined' && typeof module === 'undefined') {
     }
     var tile = findSelfViewTile(document, cachedUserName);
     if (tile) {
-      tile.style.display = 'none';
+      walkUpParents(tile, 2).style.display = 'none';
     }
   }
 
@@ -130,5 +120,5 @@ if (typeof window !== 'undefined' && typeof module === 'undefined') {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { extractUserName, findSelfViewTile, hideSelfView, createDebouncedHider };
+  module.exports = { extractUserName, findSelfViewTile, hideSelfView, createDebouncedHider, walkUpParents };
 }
