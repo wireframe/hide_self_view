@@ -18,6 +18,8 @@ function extractUserName(doc) {
 }
 
 // Finds the self-view tile container by walking up from the user's "More options" button.
+// Stops when the parent contains other participant tiles (identified by data-participant-id
+// or other "More options for" buttons). The self-view tile never has data-participant-id.
 function findSelfViewTile(doc, userName) {
   const selfButton = doc.querySelector(`[aria-label="More options for ${userName}"]`);
   if (!selfButton) {
@@ -27,8 +29,11 @@ function findSelfViewTile(doc, userName) {
   let current = selfButton;
   while (current.parentElement) {
     const parent = current.parentElement;
-    const allButtons = parent.querySelectorAll('[aria-label^="More options for"]');
-    const hasOtherParticipants = Array.from(allButtons).some(
+    if (parent.querySelector('[data-participant-id]')) {
+      return current;
+    }
+    const otherButtons = parent.querySelectorAll('[aria-label^="More options for"]');
+    const hasOtherParticipants = Array.from(otherButtons).some(
       btn => btn.getAttribute('aria-label') !== `More options for ${userName}`
     );
     if (hasOtherParticipants) {
@@ -36,7 +41,7 @@ function findSelfViewTile(doc, userName) {
     }
     current = parent;
   }
-  return current;
+  return null;
 }
 
 // Hides the self-view tile by setting display:none on the identified tile element.
