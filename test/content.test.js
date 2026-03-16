@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { JSDOM } from 'jsdom';
 import { resolve } from 'path';
-import { extractUserName, findSelfViewTile, hideSelfView } from '../content.js';
+import { extractUserName, findSelfViewTile, hideSelfView, createDebouncedHider } from '../content.js';
 
 const FIXTURE_PATH = resolve(__dirname, 'fixtures/google-meet-call.html');
 const fixtureHtml = readFileSync(FIXTURE_PATH, 'utf-8');
@@ -104,5 +104,12 @@ describe('hideSelfView', () => {
   it('does nothing when user name cannot be extracted', () => {
     const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
     expect(() => hideSelfView(dom.window.document)).not.toThrow();
+  });
+});
+
+describe('createDebouncedHider', () => {
+  it('returns a function', () => {
+    const hider = createDebouncedHider(() => {});
+    expect(typeof hider).toBe('function');
   });
 });

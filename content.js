@@ -55,6 +55,33 @@ function hideSelfView(doc) {
   console.log('Self-view hidden for: ' + userName);
 }
 
+// Creates a debounced version of the hide function to avoid excessive DOM operations.
+function createDebouncedHider(hideFn, delay) {
+  let timeoutId = null;
+  return function() {
+    if (timeoutId) { clearTimeout(timeoutId); }
+    timeoutId = setTimeout(hideFn, delay || 500);
+  };
+}
+
+// Browser extension entry point
+if (typeof window !== 'undefined' && typeof module === 'undefined') {
+  const debouncedHide = createDebouncedHider(function() {
+    hideSelfView(document);
+  }, 500);
+
+  window.addEventListener('load', function() {
+    hideSelfView(document);
+  });
+
+  window.addEventListener('beforeunload', function() {
+    observer.disconnect();
+  });
+
+  var observer = new MutationObserver(debouncedHide);
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { extractUserName, findSelfViewTile, hideSelfView };
+  module.exports = { extractUserName, findSelfViewTile, hideSelfView, createDebouncedHider };
 }
