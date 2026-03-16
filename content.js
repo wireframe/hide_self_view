@@ -66,20 +66,34 @@ function createDebouncedHider(hideFn, delay) {
 
 // Browser extension entry point
 if (typeof window !== 'undefined' && typeof module === 'undefined') {
-  const debouncedHide = createDebouncedHider(function() {
-    hideSelfView(document);
-  }, 500);
+  var cachedUserName = null;
+
+  function hideWithCachedName() {
+    if (!cachedUserName) {
+      cachedUserName = extractUserName(document);
+    }
+    if (!cachedUserName) {
+      return;
+    }
+    var tile = findSelfViewTile(document, cachedUserName);
+    if (tile) {
+      tile.style.display = 'none';
+    }
+  }
+
+  var debouncedHide = createDebouncedHider(hideWithCachedName, 500);
+
+  var observer = new MutationObserver(debouncedHide);
 
   window.addEventListener('load', function() {
     hideSelfView(document);
+    observer.observe(document.body, { childList: true, subtree: true });
   });
 
   window.addEventListener('beforeunload', function() {
     observer.disconnect();
+    cachedUserName = null;
   });
-
-  var observer = new MutationObserver(debouncedHide);
-  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 if (typeof module !== 'undefined' && module.exports) {

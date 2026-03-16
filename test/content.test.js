@@ -8,8 +8,17 @@ const FIXTURE_PATH = resolve(__dirname, 'fixtures/google-meet-call.html');
 const fixtureHtml = readFileSync(FIXTURE_PATH, 'utf-8');
 
 function loadFixture() {
-  const dom = new JSDOM(fixtureHtml, { runScripts: 'dangerously' });
+  const dom = new JSDOM(fixtureHtml);
   return dom.window.document;
+}
+
+function isAncestorHidden(element) {
+  let el = element;
+  while (el) {
+    if (el.style && el.style.display === 'none') return true;
+    el = el.parentElement;
+  }
+  return false;
 }
 
 describe('fixture loads correctly', () => {
@@ -64,26 +73,14 @@ describe('hideSelfView', () => {
     const doc = loadFixture();
     hideSelfView(doc);
     const selfButton = doc.querySelector('[aria-label="More options for Test User"]');
-    let el = selfButton;
-    let hidden = false;
-    while (el) {
-      if (el.style && el.style.display === 'none') { hidden = true; break; }
-      el = el.parentElement;
-    }
-    expect(hidden).toBe(true);
+    expect(isAncestorHidden(selfButton)).toBe(true);
   });
 
   it('does not hide other participant tiles', () => {
     const doc = loadFixture();
     hideSelfView(doc);
     const aliceButton = doc.querySelector('[aria-label="More options for Alice Smith"]');
-    let el = aliceButton;
-    let hidden = false;
-    while (el) {
-      if (el.style && el.style.display === 'none') { hidden = true; break; }
-      el = el.parentElement;
-    }
-    expect(hidden).toBe(false);
+    expect(isAncestorHidden(aliceButton)).toBe(false);
   });
 
   it('is idempotent — multiple calls do not cause errors', () => {
@@ -92,13 +89,21 @@ describe('hideSelfView', () => {
     hideSelfView(doc);
     hideSelfView(doc);
     const selfButton = doc.querySelector('[aria-label="More options for Test User"]');
-    let el = selfButton;
-    let hidden = false;
-    while (el) {
-      if (el.style && el.style.display === 'none') { hidden = true; break; }
-      el = el.parentElement;
-    }
-    expect(hidden).toBe(true);
+    expect(isAncestorHidden(selfButton)).toBe(true);
+  });
+
+  it('re-hides after DOM rebuild', () => {
+    const doc = loadFixture();
+    hideSelfView(doc);
+
+    const selfButton = doc.querySelector('[aria-label="More options for Test User"]');
+    const tile = findSelfViewTile(doc, 'Test User');
+    tile.style.display = '';
+
+    expect(isAncestorHidden(selfButton)).toBe(false);
+
+    hideSelfView(doc);
+    expect(isAncestorHidden(selfButton)).toBe(true);
   });
 
   it('does nothing when user name cannot be extracted', () => {
