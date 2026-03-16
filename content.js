@@ -47,22 +47,23 @@ function findSelfViewTile(doc, userName) {
   if (!tile) {
     return null;
   }
-  // Walk up past sizing/positioning wrappers that visually contain the tile.
-  // Stop at any ancestor that has explicit width/height or inset positioning,
-  // since those are the visual containers we want to include when hiding.
-  while (tile.parentElement) {
-    const parentStyle = tile.parentElement.style;
-    const hasLayout = parentStyle && (parentStyle.width || parentStyle.height || parentStyle.inset);
-    if (!hasLayout) {
+  // Walk up to include the outermost positioning/sizing wrapper.
+  // The self-view tile is wrapped in containers with inline width/height/inset
+  // styles, possibly with unstyled wrappers in between. Find the outermost
+  // layout ancestor that doesn't contain other participants.
+  var outermost = tile;
+  var candidate = tile;
+  while (candidate.parentElement) {
+    candidate = candidate.parentElement;
+    if (candidate.querySelector('[data-participant-id]')) {
       break;
     }
-    // Don't walk into a container that holds other participants
-    if (tile.parentElement.querySelector('[data-participant-id]')) {
-      break;
+    var inlineStyle = candidate.getAttribute('style') || '';
+    if (inlineStyle.match(/width|height|inset/)) {
+      outermost = candidate;
     }
-    tile = tile.parentElement;
   }
-  return tile;
+  return outermost;
 }
 
 // Hides the self-view tile by setting display:none on the identified tile element.
