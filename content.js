@@ -27,21 +27,42 @@ function findSelfViewTile(doc, userName) {
   }
 
   let current = selfButton;
+  let tile = null;
   while (current.parentElement) {
     const parent = current.parentElement;
     if (parent.querySelector('[data-participant-id]')) {
-      return current;
+      tile = current;
+      break;
     }
     const otherButtons = parent.querySelectorAll('[aria-label^="More options for"]');
     const hasOtherParticipants = Array.from(otherButtons).some(
       btn => btn.getAttribute('aria-label') !== `More options for ${userName}`
     );
     if (hasOtherParticipants) {
-      return current;
+      tile = current;
+      break;
     }
     current = parent;
   }
-  return null;
+  if (!tile) {
+    return null;
+  }
+  // Walk up past sizing/positioning wrappers that visually contain the tile.
+  // Stop at any ancestor that has explicit width/height or inset positioning,
+  // since those are the visual containers we want to include when hiding.
+  while (tile.parentElement) {
+    const parentStyle = tile.parentElement.style;
+    const hasLayout = parentStyle && (parentStyle.width || parentStyle.height || parentStyle.inset);
+    if (!hasLayout) {
+      break;
+    }
+    // Don't walk into a container that holds other participants
+    if (tile.parentElement.querySelector('[data-participant-id]')) {
+      break;
+    }
+    tile = tile.parentElement;
+  }
+  return tile;
 }
 
 // Hides the self-view tile by setting display:none on the identified tile element.
