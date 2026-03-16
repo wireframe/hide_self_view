@@ -17,6 +17,28 @@ function extractUserName(doc) {
   return null;
 }
 
+// Finds the self-view tile container by walking up from the user's "More options" button.
+function findSelfViewTile(doc, userName) {
+  const selfButton = doc.querySelector(`[aria-label="More options for ${userName}"]`);
+  if (!selfButton) {
+    return null;
+  }
+
+  let current = selfButton;
+  while (current.parentElement) {
+    const parent = current.parentElement;
+    const allButtons = parent.querySelectorAll('[aria-label^="More options for"]');
+    const hasOtherParticipants = Array.from(allButtons).some(
+      btn => btn.getAttribute('aria-label') !== `More options for ${userName}`
+    );
+    if (hasOtherParticipants) {
+      return current;
+    }
+    current = parent;
+  }
+  return current;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { extractUserName };
+  module.exports = { extractUserName, findSelfViewTile };
 }
