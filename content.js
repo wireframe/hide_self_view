@@ -47,13 +47,39 @@ function findSelfViewTile(doc, userName) {
   return tile || null;
 }
 
-// Walks up a fixed number of parent levels from a starting element.
+// Walks up parent levels from a starting element, stopping early if the next
+// parent contains other participant tiles (data-participant-id or other
+// "More options for" buttons beyond the self-view's own).
 function walkUpParents(element, levels) {
   var current = element;
   for (var i = 0; i < levels && current.parentElement; i++) {
-    current = current.parentElement;
+    var parent = current.parentElement;
+    if (containsOtherParticipants(parent, current)) {
+      break;
+    }
+    current = parent;
   }
   return current;
+}
+
+// Checks whether a parent element contains other participants' content
+// (data-participant-id tiles or "More options for" buttons) that are NOT
+// descendants of selfBranch. Used by walkUpParents to avoid hiding containers
+// that hold other participants' video tiles.
+function containsOtherParticipants(parent, selfBranch) {
+  var participantTiles = parent.querySelectorAll('[data-participant-id]');
+  for (var j = 0; j < participantTiles.length; j++) {
+    if (!selfBranch.contains(participantTiles[j])) {
+      return true;
+    }
+  }
+  var buttons = parent.querySelectorAll('[aria-label^="More options for"]');
+  for (var k = 0; k < buttons.length; k++) {
+    if (!selfBranch.contains(buttons[k])) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // Hides the self-view tile by setting display:none on the identified tile element.
@@ -120,5 +146,5 @@ if (typeof window !== 'undefined' && typeof module === 'undefined') {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { extractUserName, findSelfViewTile, hideSelfView, createDebouncedHider, walkUpParents };
+  module.exports = { extractUserName, findSelfViewTile, hideSelfView, createDebouncedHider, walkUpParents, containsOtherParticipants };
 }
